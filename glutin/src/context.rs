@@ -123,10 +123,11 @@ impl<'a, T: ContextCurrentState> ContextBuilder<'a, T> {
         self,
         el: &EventLoopWindowTarget<TE>,
         size: dpi::PhysicalSize<u32>,
+        screen_id: Option<i32>,
     ) -> Result<Context<NotCurrent>, CreationError> {
         let ContextBuilder { pf_reqs, gl_attr } = self;
         let gl_attr = gl_attr.map_sharing(|ctx| &ctx.context);
-        platform_impl::Context::new_headless(el, &pf_reqs, &gl_attr, size)
+        platform_impl::Context::new_headless(el, &pf_reqs, &gl_attr, size, screen_id)
             .map(|context| Context { context, phantom: PhantomData })
     }
 }
