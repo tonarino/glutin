@@ -132,8 +132,9 @@ impl Context {
         pf_reqs: &PixelFormatRequirements,
         gl_attr: &GlAttributes<&Context>,
         size: dpi::PhysicalSize<u32>,
+        screen_id: Option<i32>,
     ) -> Result<Self, CreationError> {
-        Self::new_headless_impl(el, pf_reqs, gl_attr, Some(size))
+        Self::new_headless_impl(el, pf_reqs, gl_attr, Some(size), screen_id)
     }
 
     pub fn new_headless_impl<T>(
@@ -141,6 +142,7 @@ impl Context {
         pf_reqs: &PixelFormatRequirements,
         gl_attr: &GlAttributes<&Context>,
         size: Option<dpi::PhysicalSize<u32>>,
+        screen_id: Option<i32>,
     ) -> Result<Self, CreationError> {
         #[cfg(feature = "wayland")]
         if el.is_wayland() {
@@ -159,7 +161,7 @@ impl Context {
                 Context::X11(ref ctx) => ctx,
                 _ => unreachable!(),
             });
-            return x11::Context::new_headless(el, pf_reqs, &gl_attr, size).map(Context::X11);
+            return x11::Context::new_headless(el, pf_reqs, &gl_attr, size, screen_id).map(Context::X11);
         }
         panic!("glutin was not compiled with support for this display server")
     }
@@ -371,7 +373,7 @@ impl<'a, T: ContextCurrentState> HeadlessContextExt for crate::ContextBuilder<'a
     {
         let crate::ContextBuilder { pf_reqs, gl_attr } = self;
         let gl_attr = gl_attr.map_sharing(|ctx| &ctx.context);
-        Context::new_headless_impl(el, &pf_reqs, &gl_attr, None)
+        Context::new_headless_impl(el, &pf_reqs, &gl_attr, None, None)
             .map(|context| crate::Context { context, phantom: PhantomData })
     }
 }

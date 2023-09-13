@@ -176,9 +176,10 @@ impl Context {
         pf_reqs: &PixelFormatRequirements,
         gl_attr: &GlAttributes<&Context>,
         size: Option<dpi::PhysicalSize<u32>>,
+        screen_id: Option<i32>,
     ) -> Result<Self, CreationError> {
         Self::try_then_fallback(|fallback| {
-            Self::new_headless_impl(el, pf_reqs, gl_attr, size, fallback)
+            Self::new_headless_impl(el, pf_reqs, gl_attr, size, fallback, screen_id)
         })
     }
 
