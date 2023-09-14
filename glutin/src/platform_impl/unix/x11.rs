@@ -445,8 +445,8 @@ impl Context {
         gl_attr: &GlAttributes<&Context>,
     ) -> Result<(Window, Self), CreationError> {
         dbg!("Building context: entring Context::new !!!!!!!!!!!!!!!!!!!!!!!!");
-        dbg!(wb);
-        dbg!(gl_attr);
+        dbg!(&wb);
+        dbg!(&gl_attr);
         let context = Self::try_then_fallback(|fallback| {
             Self::new_impl(wb.clone(), el, pf_reqs, gl_attr, fallback)
         });
