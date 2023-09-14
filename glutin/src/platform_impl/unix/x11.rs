@@ -305,6 +305,7 @@ impl Context {
             })
             .map(|(c, _)| c)
         };
+        dbg!("Building context: got select_config");
         Ok(match gl_attr.version {
             GlRequest::Latest
             | GlRequest::Specific(Api::OpenGl, _)
@@ -320,14 +321,16 @@ impl Context {
                         X11Context::Glx(ref c) => c,
                         _ => panic!("context already exists but is wrong type"),
                     }));
-                    Ok(Prototype::Glx(GlxContext::new(
+                    let context = Ok(Prototype::Glx(GlxContext::new(
                         Arc::clone(xconn),
                         pf_reqs,
                         builder_u.as_ref().unwrap(),
                         screen_id,
                         surface_type,
                         transparent,
-                    )?))
+                    )?));
+                    dbg!("Building context: created GlxContext");
+                    context
                 };
 
                 let egl = |builder_u: &'a mut Option<_>| {
@@ -464,6 +467,7 @@ impl Context {
             // Get the screen_id for the window being built.
             unsafe { (xconn.xlib.XDefaultScreen)(xconn.display) }
         });
+        dbg!("Building context: using {screen_id}");
 
         let mut builder_glx_u = None;
         let mut builder_egl_u = None;
@@ -481,6 +485,7 @@ impl Context {
             fallback,
             Some(wb.transparent()),
         )?;
+        dbg!("Building context: finished first stage");
 
         // getting the `visual_infos` (a struct that contains information about
         // the visual to use)
@@ -490,9 +495,11 @@ impl Context {
                 utils::get_visual_info_from_xid(&xconn, p.get_native_visual_id() as ffi::VisualID)
             }
         };
+        dbg!("Building context: got visual info");
 
         let win =
             wb.with_x11_visual(&visual_infos as *const _).with_x11_screen(screen_id).build(el)?;
+        dbg!("Building context: built window");
 
         let xwin = win.xlib_window().unwrap();
         // finish creating the OpenGL context
@@ -500,6 +507,7 @@ impl Context {
             Prototype::Glx(ctx) => X11Context::Glx(ctx.finish(xwin)?),
             Prototype::Egl(ctx) => X11Context::Egl(ctx.finish(xwin as _)?),
         };
+        dbg!("Building context: finished");
 
         let context = Context::Windowed(ContextInner { context });
 
