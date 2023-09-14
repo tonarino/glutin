@@ -444,9 +444,14 @@ impl Context {
         pf_reqs: &PixelFormatRequirements,
         gl_attr: &GlAttributes<&Context>,
     ) -> Result<(Window, Self), CreationError> {
-        Self::try_then_fallback(|fallback| {
+        dbg!("Building context: entring Context::new !!!!!!!!!!!!!!!!!!!!!!!!");
+        dbg!(wb);
+        dbg!(gl_attr);
+        let context = Self::try_then_fallback(|fallback| {
             Self::new_impl(wb.clone(), el, pf_reqs, gl_attr, fallback)
-        })
+        });
+        dbg!("Building context: existed Context::new !!!!!!!!!!!!!!!!!!!!!!!!");
+        context
     }
 
     fn new_impl<T>(
