@@ -467,7 +467,8 @@ impl Context {
             // Get the screen_id for the window being built.
             unsafe { (xconn.xlib.XDefaultScreen)(xconn.display) }
         });
-        dbg!("Building context: using {screen_id}");
+        dbg!("Building context: got screen_id");
+        dbg!(screen_id);
 
         let mut builder_glx_u = None;
         let mut builder_egl_u = None;
@@ -504,10 +505,15 @@ impl Context {
         let xwin = win.xlib_window().unwrap();
         // finish creating the OpenGL context
         let context = match context {
-            Prototype::Glx(ctx) => X11Context::Glx(ctx.finish(xwin)?),
+            Prototype::Glx(ctx) => {
+                dbg!("Building context: calling ctx.finish");
+                let c = ctx.finish(xwin)?;
+                dbg!("Building context: called ctx.finish");
+                X11Context::Glx(c)
+            }
             Prototype::Egl(ctx) => X11Context::Egl(ctx.finish(xwin as _)?),
         };
-        dbg!("Building context: finished");
+        dbg!("Building context: X11Context created");
 
         let context = Context::Windowed(ContextInner { context });
 
