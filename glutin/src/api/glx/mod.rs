@@ -378,6 +378,7 @@ impl<'a> ContextPrototype<'a> {
     pub fn finish(self, window: ffi::Window) -> Result<Context, CreationError> {
         let glx = GLX.as_ref().unwrap();
         let (extra_functions, context) = self.create_context()?;
+        dbg!("self.create_context() suceeded", context);
 
         // vsync
         let swap_mode = if self.opengl.vsync { 1 } else { 0 };
@@ -527,6 +528,7 @@ fn create_context(
 
             attributes.push(0);
 
+            dbg!("Calling extra_functions.CreateContextAttribsARB()");
             extra_functions.CreateContextAttribsARB(
                 display as *mut _,
                 fb_config,
@@ -536,6 +538,7 @@ fn create_context(
             )
         } else {
             let visual_infos: *const ffi::XVisualInfo = visual_infos;
+            dbg!("Calling glx.CreateContext()");
             glx.CreateContext(display as *mut _, visual_infos as *mut _, share, 1)
         };
 
