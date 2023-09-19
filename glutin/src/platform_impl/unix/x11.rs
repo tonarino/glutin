@@ -450,7 +450,7 @@ impl Context {
         let context = Self::try_then_fallback(|fallback| {
             Self::new_impl(wb.clone(), el, pf_reqs, gl_attr, fallback)
         });
-        dbg!("Building context: existed Context::new !!!!!!!!!!!!!!!!!!!!!!!!");
+        dbg!("Building context: exited Context::new !!!!!!!!!!!!!!!!!!!!!!!!");
         context
     }
 
@@ -501,7 +501,8 @@ impl Context {
                 utils::get_visual_info_from_xid(&xconn, p.get_native_visual_id() as ffi::VisualID)
             }
         };
-        dbg!("Building context: got visual info");
+
+        dbg!("Building context: got visual info", std::thread::current().id(), &visual_infos);
 
         let win =
             wb.with_x11_visual(&visual_infos as *const _).with_x11_screen(screen_id).build(el)?;
