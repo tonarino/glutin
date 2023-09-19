@@ -102,6 +102,7 @@ impl Context {
 
         // loading the list of extensions
         let extensions = load_extensions(&xconn, screen_id)?;
+        dbg!("Building context: Loaded extensions with {screen_id}");
 
         // finding the pixel format we want
         let (fb_config, pixel_format, visual_infos) = unsafe {
@@ -671,6 +672,7 @@ unsafe fn choose_fbconfig(
         out.push(0);
         out
     };
+    dbg!("Building context: got descriptor");
 
     // calling glXChooseFBConfig
     let (fb_config, visual_infos): (ffi::glx::types::GLXFBConfig, ffi::XVisualInfo) = {
@@ -681,6 +683,7 @@ unsafe fn choose_fbconfig(
             descriptor.as_ptr(),
             &mut num_configs,
         );
+        dbg!("Building context: finished ChooseFBConfig with {screen_id}");
         if configs.is_null() {
             return Err(CreationError::NoAvailablePixelFormat);
         }
@@ -721,6 +724,7 @@ unsafe fn choose_fbconfig(
             }
         }
     };
+    dbg!("Building context: got visual infos");
 
     let get_attrib = |attrib: raw::c_int| -> i32 {
         let mut value = 0;
@@ -748,6 +752,7 @@ unsafe fn choose_fbconfig(
         srgb: get_attrib(ffi::glx_extra::FRAMEBUFFER_SRGB_CAPABLE_ARB as raw::c_int) != 0
             || get_attrib(ffi::glx_extra::FRAMEBUFFER_SRGB_CAPABLE_EXT as raw::c_int) != 0,
     };
+    dbg!("Building context: got pf_desc");
 
     Ok((fb_config, pf_desc, visual_infos))
 }

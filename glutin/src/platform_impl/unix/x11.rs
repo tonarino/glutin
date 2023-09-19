@@ -163,10 +163,13 @@ impl Context {
     {
         match f(false) {
             Ok(ok) => Ok(ok),
-            Err(err1) => match f(true) {
-                Ok(ok) => Ok(ok),
-                Err(err2) => Err(err1.append(err2)),
-            },
+            Err(err1) => {
+                dbg!("Resorting to fallback=true");
+                match f(true) {
+                    Ok(ok) => Ok(ok),
+                    Err(err2) => Err(err1.append(err2)),
+                }
+            }
         }
     }
 
@@ -300,6 +303,7 @@ impl Context {
             })
             .map(|(c, _)| c)
         };
+        dbg!("Building context: got select_config");
         Ok(match gl_attr.version {
             GlRequest::Latest
             | GlRequest::Specific(Api::OpenGl, _)
@@ -315,14 +319,16 @@ impl Context {
                         X11Context::Glx(ref c) => c,
                         _ => panic!("context already exists but is wrong type"),
                     }));
-                    Ok(Prototype::Glx(GlxContext::new(
+                    let context = Ok(Prototype::Glx(GlxContext::new(
                         Arc::clone(xconn),
                         pf_reqs,
                         builder_u.as_ref().unwrap(),
                         screen_id,
                         surface_type,
                         transparent,
-                    )?))
+                    )?));
+                    dbg!("Building context: created GlxContext");
+                    context
                 };
 
                 let egl = |builder_u: &'a mut Option<_>| {
@@ -436,9 +442,14 @@ impl Context {
         pf_reqs: &PixelFormatRequirements,
         gl_attr: &GlAttributes<&Context>,
     ) -> Result<(Window, Self), CreationError> {
-        Self::try_then_fallback(|fallback| {
+        dbg!("Building context: entring Context::new !!!!!!!!!!!!!!!!!!!!!!!!");
+        dbg!(&wb);
+        dbg!(&gl_attr);
+        let context = Self::try_then_fallback(|fallback| {
             Self::new_impl(wb.clone(), el, pf_reqs, gl_attr, fallback)
-        })
+        });
+        dbg!("Building context: exited Context::new !!!!!!!!!!!!!!!!!!!!!!!!");
+        context
     }
 
     fn new_impl<T>(
@@ -455,8 +466,12 @@ impl Context {
             }
         };
 
-        // Get the screen_id for the window being built.
-        let screen_id = unsafe { (xconn.xlib.XDefaultScreen)(xconn.display) };
+        let screen_id = wb.platform_specific.screen_id.unwrap_or_else(|| {
+            // Get the screen_id for the window being built.
+            unsafe { (xconn.xlib.XDefaultScreen)(xconn.display) }
+        });
+        dbg!("Building context: got screen_id");
+        dbg!(screen_id);
 
         let mut builder_glx_u = None;
         let mut builder_egl_u = None;
@@ -474,6 +489,7 @@ impl Context {
             fallback,
             Some(wb.transparent()),
         )?;
+        dbg!("Building context: finished first stage");
 
         // getting the `visual_infos` (a struct that contains information about
         // the visual to use)
@@ -484,15 +500,24 @@ impl Context {
             }
         };
 
+        dbg!("Building context: got visual info", std::thread::current().id(), &visual_infos);
+
         let win =
             wb.with_x11_visual(&visual_infos as *const _).with_x11_screen(screen_id).build(el)?;
+        dbg!("Building context: built window");
 
         let xwin = win.xlib_window().unwrap();
         // finish creating the OpenGL context
         let context = match context {
-            Prototype::Glx(ctx) => X11Context::Glx(ctx.finish(xwin)?),
+            Prototype::Glx(ctx) => {
+                dbg!("Building context: calling ctx.finish");
+                let c = ctx.finish(xwin)?;
+                dbg!("Building context: called ctx.finish");
+                X11Context::Glx(c)
+            }
             Prototype::Egl(ctx) => X11Context::Egl(ctx.finish(xwin as _)?),
         };
+        dbg!("Building context: X11Context created");
 
         let context = Context::Windowed(ContextInner { context });
 
