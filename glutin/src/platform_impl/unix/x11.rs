@@ -456,7 +456,9 @@ impl Context {
         };
 
         // Get the screen_id for the window being built.
-        let screen_id = unsafe { (xconn.xlib.XDefaultScreen)(xconn.display) };
+        let screen_id = wb.platform_specific.screen_id.unwrap_or_else(|| {
+            unsafe { (xconn.xlib.XDefaultScreen)(xconn.display) }
+        });
 
         let mut builder_glx_u = None;
         let mut builder_egl_u = None;
