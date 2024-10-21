@@ -64,6 +64,18 @@ pub trait NotCurrentGlContext: Sealed {
         surface: &Self::Surface<T>,
     ) -> Result<Self::PossiblyCurrentContext>;
 
+    /// Make the context current on the calling thread producing the
+    /// [`Self::PossiblyCurrentContext`] indicating that the context could
+    /// be current on the thread.
+    ///
+    /// # Platform specific
+    ///
+    /// - **macOS: this will block if your main thread is blocked**;
+    /// - **Wayland:** this call may latch the underlying back buffer (will do
+    ///   with mesa drivers), meaning that all resize operations will apply
+    ///   after the next [`GlSurface::swap_buffers`].
+    fn make_current_surfaceless(self) -> Result<Self::PossiblyCurrentContext>;
+
     /// The same as [`Self::make_current`], but provides a way to set read and
     /// draw surfaces.
     ///
@@ -407,6 +419,32 @@ impl NotCurrentGlContext for NotCurrentContext {
             (Self::Cgl(context), Surface::Cgl(surface)) => {
                 Ok(PossiblyCurrentContext::Cgl(context.make_current(surface)?))
             },
+            _ => unreachable!(),
+        }
+    }
+
+    fn make_current_surfaceless(self) -> Result<Self::PossiblyCurrentContext> {
+        match self {
+            #[cfg(egl_backend)]
+            Self::Egl(context) => {
+                Ok(PossiblyCurrentContext::Egl(context.make_current_surfaceless()?))
+            },
+
+            #[cfg(glx_backend)]
+            Self::Glx(context) => {
+                Ok(PossiblyCurrentContext::Glx(context.make_current_surfaceless()?))
+            },
+
+            #[cfg(wgl_backend)]
+            Self::Wgl(context) => {
+                Ok(PossiblyCurrentContext::Wgl(context.make_current_surfaceless()?))
+            },
+
+            #[cfg(cgl_backend)]
+            Self::Cgl(context) => {
+                Ok(PossiblyCurrentContext::Cgl(context.make_current_surfaceless()?))
+            },
+
             _ => unreachable!(),
         }
     }
