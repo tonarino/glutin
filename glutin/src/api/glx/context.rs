@@ -379,7 +379,7 @@ struct ContextInner {
 }
 
 impl ContextInner {
-    fn make_current_surfaceless<T: SurfaceTypeTrait>(&self) -> Result<()> {
+    fn make_current_surfaceless(&self) -> Result<()> {
         super::last_glx_error(|| unsafe {
             self.display.inner.glx.MakeContextCurrent(
                 self.display.inner.raw.cast(),
