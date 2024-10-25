@@ -677,8 +677,9 @@ impl fmt::Debug for DisplayInner {
         f.debug_struct("Display")
             .field("raw", &self.raw)
             .field("version", &self.version)
+            .field("display_extensions", &self.display_extensions)
             .field("features", &self.features)
-            .field("extensions", &self.display_extensions)
+            .field("_native_display", &self._native_display)
             .finish()
     }
 }

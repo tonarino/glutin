@@ -1,9 +1,9 @@
 //! Everything related to finding and manipulating the `EGLConfig`.
 #![allow(clippy::unnecessary_cast)] // needed for 32bit & 64bit support
 
+use std::mem;
 use std::ops::Deref;
 use std::sync::Arc;
-use std::{fmt, mem};
 
 use raw_window_handle::RawWindowHandle;
 
@@ -389,6 +389,7 @@ impl X11GlConfigExt for Config {
 
 impl Sealed for Config {}
 
+#[derive(Debug)]
 pub(crate) struct ConfigInner {
     display: Display,
     pub(crate) raw: EglConfig,
@@ -402,14 +403,14 @@ impl PartialEq for ConfigInner {
 
 impl Eq for ConfigInner {}
 
-impl fmt::Debug for ConfigInner {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Config")
-            .field("raw", &self.raw)
-            .field("display", &self.display.inner.raw)
-            .finish()
-    }
-}
+// impl fmt::Debug for ConfigInner {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         f.debug_struct("Config")
+//             .field("raw", &self.raw)
+//             .field("display", &self.display.inner.raw)
+//             .finish()
+//     }
+// }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct EglConfig(EGLConfig);
