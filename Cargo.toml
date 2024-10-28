@@ -11,4 +11,4 @@ members = [
 ]
 
 [patch.crates-io]
-winit = { version = "0.30", path = "../winit" } # git = "https://github.com/tonarino/winit.git", branch = "x11-screen-id" }
+winit = { git = "https://github.com/tonarino/winit.git", branch = "x11-screen-id" }
