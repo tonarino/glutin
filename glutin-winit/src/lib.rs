@@ -111,7 +111,9 @@ impl DisplayBuilder {
             None
         };
 
+        #[cfg(x11_platform)]
         let mut raw_display_handle = event_loop.glutin_display_handle()?.as_raw();
+        #[cfg(x11_platform)]
         if let Some(screen_id) = self.window_attributes.as_ref().and_then(|wa| wa.x11_screen()) {
             eprintln!("Injecting screen_id {screen_id} into raw_display_handle.");
             match &mut raw_display_handle {
@@ -122,6 +124,9 @@ impl DisplayBuilder {
                 },
             }
         }
+
+        #[cfg(not(x11_platform))]
+        let raw_display_handle = event_loop.glutin_display_handle()?.as_raw();
 
         #[cfg(wgl_backend)]
         let raw_window_handle = window
